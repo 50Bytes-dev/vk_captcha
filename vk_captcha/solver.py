@@ -17,8 +17,29 @@ if TYPE_CHECKING:
     from vkbottle import CaptchaError
     from vk_wave import APIOptionsRequestContext
 
-characters = ['z', 's', 'h', 'q', 'd', 'v', '2', '7', '8',
-              'x', 'y', '5', 'e', 'a', 'u', '4', 'k', 'n', 'm', 'c', 'p']
+characters = [
+    "z",
+    "s",
+    "h",
+    "q",
+    "d",
+    "v",
+    "2",
+    "7",
+    "8",
+    "x",
+    "y",
+    "5",
+    "e",
+    "a",
+    "u",
+    "4",
+    "k",
+    "n",
+    "m",
+    "c",
+    "p",
+]
 img_width = 130
 img_height = 50
 lock = threading.Lock()
@@ -29,33 +50,43 @@ max_length = 7
 
 class VkCaptchaSolver:
     """
-    Vk captcha handling
-    Fast examples:
-1) vk_api.VkApi
->>> from vk_captcha import vk_api_handler
->>> vk = vk_api_handler.VkApiCaptcha("88005553535", "efwoewkofokw")  # this login will create captcha
->>> vk_api_handler.Solver.logging = True  # enable logging
->>> vk.auth() # getting Password Api error
-2) solving captcha from url
->>> from vk_captcha import VkCaptchaSolver
->>> import random
->>> solver = VkCaptchaSolver(logging=True)
->>> captcha_response, accuracy = solver.solve(url=f"https://api.vk.com/captcha.php?sid={random.randint(0,10000000)}", minimum_accuracy=0.15)
->>> async def async_way():
-... await solver.solve_async(url=f"https://api.vk.com/captcha.php?sid={random.randint(0,10000000)}")
-3) if you have image in bytes:
->>> solver.solve(bytes_data=requests.get(f"https://api.vk.com/captcha.php?sid={random.randint(0,10000000)}").content)
+        Vk captcha handling
+        Fast examples:
+    1) vk_api.VkApi
+    >>> from vk_captcha import vk_api_handler
+    >>> vk = vk_api_handler.VkApiCaptcha("88005553535", "efwoewkofokw")  # this login will create captcha
+    >>> vk_api_handler.Solver.logging = True  # enable logging
+    >>> vk.auth() # getting Password Api error
+    2) solving captcha from url
+    >>> from vk_captcha import VkCaptchaSolver
+    >>> import random
+    >>> solver = VkCaptchaSolver(logging=True)
+    >>> captcha_response, accuracy = solver.solve(url=f"https://api.vk.com/captcha.php?sid={random.randint(0,10000000)}", minimum_accuracy=0.15)
+    >>> async def async_way():
+    ... await solver.solve_async(url=f"https://api.vk.com/captcha.php?sid={random.randint(0,10000000)}")
+    3) if you have image in bytes:
+    >>> solver.solve(bytes_data=requests.get(f"https://api.vk.com/captcha.php?sid={random.randint(0,10000000)}").content)
     """
+
     TOTAL_COUNT = 0
     FAIL_COUNT = 1
     TOTAL_TIME = 0
 
-    def __init__(self, logging=False, model_fname=os.path.dirname(__file__) + "/model.onnx"):
+    def __init__(
+        self, logging=False, model_fname=os.path.dirname(__file__) + "/model.onnx"
+    ):
         self.logging = logging
         self.Model = onr.InferenceSession(model_fname)
         self.ModelName = self.Model.get_inputs()[0].name
 
-    def solve(self, url=None, bytes_data=None, minimum_accuracy=0, repeat_count=10, session=None) -> 'str,float':
+    def solve(
+        self,
+        url=None,
+        bytes_data=None,
+        minimum_accuracy=0,
+        repeat_count=10,
+        session=None,
+    ) -> "str,float":
         """Solves VK captcha
         :param bytes_data: Raw image data
         :type bytes_data: bytes
@@ -74,7 +105,7 @@ class VkCaptchaSolver:
         :return Tuple[answer:str, accuracy:float ( Range=[0,1]) ]
         """
         if url is not None:
-            url = url.replace('&resized=1', '').replace("?resized=1&", '?')
+            url = url.replace("&resized=1", "").replace("?resized=1&", "?")
         if self.logging:
             with logging_lock:
                 print(f"Solving captcha {url}")
@@ -84,11 +115,15 @@ class VkCaptchaSolver:
             if url is not None:
                 for _ in range(4):
                     try:
-                        bytes_data = (session or requests).get(
-                            url, headers={"Content-language": "en"}).content
+                        bytes_data = (
+                            (session or requests)
+                            .get(url, headers={"Content-language": "en"})
+                            .content
+                        )
                         if bytes_data is None:
                             raise ProxyError(
-                                "Can not download data, probably proxy error")
+                                "Can not download data, probably proxy error"
+                            )
                         break
                     except:
                         if _ == 3:
@@ -100,7 +135,8 @@ class VkCaptchaSolver:
             if self.logging:
                 with logging_lock:
                     print(
-                        f"Solved accuracy(={accuracy:.4}) < miniumum(={minimum_accuracy:.4}). Trying again.")
+                        f"Solved accuracy(={accuracy:.4}) < miniumum(={minimum_accuracy:.4}). Trying again."
+                    )
         with lock:
             VkCaptchaSolver.TOTAL_COUNT += 1
         return answer, accuracy
@@ -121,7 +157,14 @@ class VkCaptchaSolver:
             )
         return VkCaptchaSolver._runner
 
-    async def solve_async(self, url=None, bytes_data=None, minimum_accuracy=0, repeat_count=10, session=None) -> 'str,float':
+    async def solve_async(
+        self,
+        url=None,
+        bytes_data=None,
+        minimum_accuracy=0,
+        repeat_count=10,
+        session=None,
+    ) -> "str,float":
         """Solves VK captcha async
         :param bytes_data: Raw image data
         :type bytes_data: byte
@@ -149,15 +192,17 @@ class VkCaptchaSolver:
                 for _ in range(4):
                     try:
                         if session is None:
-                            async with aiohttp.ClientSession(headers={"Content-language": "en"}) as session_m, \
-                                    session_m.get(url) as resp:
+                            async with aiohttp.ClientSession(
+                                headers={"Content-language": "en"}
+                            ) as session_m, session_m.get(url) as resp:
                                 bytes_data = await resp.content.read()
                         else:
                             async with session.get(url) as resp:
                                 bytes_data = await resp.content.read()
                         if bytes_data is None:
                             raise ProxyError(
-                                "Can not download captcha - probably proxy error")
+                                "Can not download captcha - probably proxy error"
+                            )
                         if resp.status != 200:
                             raise ProxyError(f"resp.status: {resp.status}")
                         break
@@ -169,14 +214,16 @@ class VkCaptchaSolver:
                 t = time.time()
             #  running in background async
             res = asyncio.get_event_loop().run_in_executor(
-                self._async_runner, self._solve_task, bytes_data)
+                self._async_runner, self._solve_task, bytes_data
+            )
             completed, _ = await asyncio.wait((res,))
             #  getting result
             answer, accuracy = next(iter(completed)).result()
             if accuracy >= minimum_accuracy or url is None:
                 break
             print(
-                f"Solved accuracy(={accuracy:.4}) < miniumum(={minimum_accuracy:.4}). Trying again.")
+                f"Solved accuracy(={accuracy:.4}) < miniumum(={minimum_accuracy:.4}). Trying again."
+            )
         with lock:
             VkCaptchaSolver.TOTAL_COUNT += 1
         return answer, accuracy
@@ -184,9 +231,9 @@ class VkCaptchaSolver:
     def _solve_task(self, data_bytes: bytes):
         t = time.time()
 
-        img = cv2.imdecode(np.asarray(
-            bytearray(data_bytes), dtype=np.uint8), -1)
-        img: "np.ndarray" = img.astype(np.float32) / 255.
+        # CHANGE: Use 1 (IMREAD_COLOR) instead of -1 (IMREAD_UNCHANGED) to force 3 channels
+        img = cv2.imdecode(np.asarray(bytearray(data_bytes), dtype=np.uint8), 1)
+        img: "np.ndarray" = img.astype(np.float32) / 255.0
         if img.shape != (img_height, img_width, 3):
             img = cv2.resize(img, (img_width, img_height))
         img = img.transpose([1, 0, 2])
@@ -203,11 +250,14 @@ class VkCaptchaSolver:
         if self.logging:
             with logging_lock:
                 print(
-                    f"Solved captcha = {answer} ({accuracy:.2%} {time.time() - t:.3}sec.)")
+                    f"Solved captcha = {answer} ({accuracy:.2%} {time.time() - t:.3}sec.)"
+                )
 
         return answer, accuracy
 
-    async def vk_wave_captcha_handler(self, error: dict, api_ctx: 'APIOptionsRequestContext'):
+    async def vk_wave_captcha_handler(
+        self, error: dict, api_ctx: "APIOptionsRequestContext"
+    ):
         method = error["error"]["request_params"][0]["value"]
         request_params = {}
         for param in error["error"]["request_params"]:
@@ -215,10 +265,13 @@ class VkCaptchaSolver:
                 continue
             request_params[param["key"]] = param["value"]
 
-        key = await self.solve_async(error["error"]["captcha_img"], minimum_accuracy=0.33)
+        key = await self.solve_async(
+            error["error"]["captcha_img"], minimum_accuracy=0.33
+        )
 
         request_params.update(
-            {"captcha_sid": error["error"]["captcha_sid"], "captcha_key": key})
+            {"captcha_sid": error["error"]["captcha_sid"], "captcha_key": key}
+        )
         return await api_ctx.api_request(method, params=request_params)
 
     def vk_wave_attach_to_api_session(self, api_session):
@@ -254,7 +307,10 @@ class VkCaptchaSolver:
     def vk_api_captcha_handler(self, captcha, minimum_accuracy=0.3, repeat_count=10):
         """vk_api.VkApi captcha handler function"""
         key, _ = self.solve(
-            captcha.get_url(), minimum_accuracy=minimum_accuracy, repeat_count=repeat_count)
+            captcha.get_url(),
+            minimum_accuracy=minimum_accuracy,
+            repeat_count=repeat_count,
+        )
         try:
             ans = captcha.try_again(key)
             return ans
@@ -265,10 +321,10 @@ class VkCaptchaSolver:
             raise
 
     async def vkbottle_captcha_handler(self, error: "CaptchaError", **kwargs) -> str:
-        if isinstance(error, Exception) and hasattr(error, 'code'):
+        if isinstance(error, Exception) and hasattr(error, "code"):
             if error.code == 14:
-                if hasattr(error, 'captcha_img'):
+                if hasattr(error, "captcha_img"):
                     url = error.captcha_img
-                if hasattr(error, 'img'):
+                if hasattr(error, "img"):
                     url = error.img
                 return (await self.solve_async(url=url, **kwargs))[0]

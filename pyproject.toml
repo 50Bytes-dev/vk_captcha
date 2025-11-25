@@ -1,0 +1,39 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "vk-captcha"
+version = "2.0"
+description = "AI VK captcha solver for 93.2% accuracy"
+readme = "README.md"
+requires-python = ">=3.4"
+license = { text = "MIT" }
+authors = [{ name = "IMCorp", email = "imartemy1@gmail.com" }]
+keywords = ["vk", "vk_api", "captcha", "vk_captcha", "solver"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Topic :: Software Development :: Build Tools",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.4",
+    "Programming Language :: Python :: 3.5",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+]
+dependencies = [
+    "aiohttp",
+    "numpy",
+    "onnxruntime",
+    "opencv-python",
+    "requests",
+    "vk-api",
+]
+urls = { Homepage = "https://github.com/imartemy1524/vk_captcha" }
+
+[tool.hatch.build.targets.wheel]
+packages = ["vk_captcha"]

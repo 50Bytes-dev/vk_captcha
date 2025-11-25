@@ -1,4 +1,5 @@
 from .solver import VkCaptchaSolver
 
-__version__ = '2.0'
+__all__ = ["VkCaptchaSolver"]
 
+__version__ = "2.1"
